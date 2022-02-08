@@ -75,13 +75,13 @@ tab.addEventListener("click", function (e) {
 
 // 過濾
 function filtering() {
-  if (currentTab == "待完成") {
-    tempData = data.filter(function (data) {
-      return data.checked == false;
+  if (currentTab === "待完成") {
+    tempData = data.filter(function (item) {
+      return item.checked == false;
     });
-  } else if (currentTab == "已完成") {
-    tempData = data.filter(function (data) {
-      return data.checked == true;
+  } else if (currentTab === "已完成") {
+    tempData = data.filter(function (item) {
+      return item.checked == true;
     });
   } else {
     tempData = data;
