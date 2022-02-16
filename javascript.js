@@ -4,36 +4,28 @@ const tab = document.querySelector(".tab");
 const generateList = document.querySelector("#todo_list");
 const undoneCount = document.querySelector("#undone_count");
 
-let obj = {};
-let data = [];
-let tempData = [];
-let count = 0;
-let currentTab = "全部";
+let obj = {}; // 待辦事項物件
+let dataNum = 0;
+let data = []; // 完整的儲存資料
+let tempData = []; // 渲染時的暫時資料
+let count = 0; // 加總
+let currentTab = "全部"; // 現在所處標籤
 
 // 渲染畫面
 function renderData(value) {
   str = "";
-  value.forEach(function (item, index) {
-    if (item.checked == true) {
-      str += `
+  value.forEach(function (item) {
+    str += `
         <li>
             <label class="checkbox" for="">
-                <input class="inputStyle" checked type="checkbox" data-num="${index}"/>
+                <input class="inputStyle" ${item.checked ? 'checked' : ''} type="checkbox" data-num="${item.dataNum}"/>
                 <span>${item.content}</span>
             </label>
-            <a href="#" class="delete" data-num="${index}"></a>
+            <a href="#" class="delete" data-num="${item.dataNum}"></a>
         </li>`;
-    } else {
-      str += `
-        <li>
-            <label class="checkbox" for="">
-                <input class="inputStyle" type="checkbox" data-num="${index}"/>
-                <span>${item.content}</span>
-            </label>
-            <a href="#" class="delete" data-num="${index}"></a>
-        </li>`;
-    }
   });
+  // 將 data-num 設定為不隨 filtering 改變的永久序列屬性
+  // console.log(value);
   const list = document.querySelector("#todo_list");
   list.innerHTML = str;
   undoneCount.innerText = count;
@@ -47,11 +39,14 @@ add.addEventListener("click", function (e) {
   }
   obj.content = text.value;
   obj.checked = false;
+  obj.dataNum = dataNum;
+  obj.delete = false;
+  dataNum++;
   data.push(obj);
   count++;
-  renderData(data);
   text.value = "";
   obj = {};
+  filtering();
 });
 
 // 切換標籤
@@ -77,14 +72,16 @@ tab.addEventListener("click", function (e) {
 function filtering() {
   if (currentTab === "待完成") {
     tempData = data.filter(function (item) {
-      return item.checked == false;
+      return item.checked == false && item.delete == false;
     });
   } else if (currentTab === "已完成") {
     tempData = data.filter(function (item) {
-      return item.checked == true;
+      return item.checked == true && item.delete == false;
     });
   } else {
-    tempData = data;
+    tempData = data.filter(function (item) {
+      return item.delete == false;
+    });
   }
   renderData(tempData);
 }
@@ -100,37 +97,30 @@ function checkToggle(item) {
   filtering();
 }
 
-// 刪除單筆待辦事項
-function deleteItem(num) {
-  data.splice(num, 1);
-}
-
 // 變更單筆待辦事項
 generateList.addEventListener("click", function (e) {
-  if (e.target.className !== "delete") {
-    let num = e.target.getAttribute("data-num");
-    if (currentTab === '全部') {
-        checkToggle(data[num]);
-    } else {
-        checkToggle(tempData[num]);
-    }
+  let num = e.target.getAttribute("data-num");
+  if (e.target.className == "inputStyle") {
+    checkToggle(data[num]);
     return;
-  } else {
-    let num = e.target.getAttribute("data-num");
-    if (data[num].checked == false) {
-      count--;
-    }
+  } else if (e.target.className == "delete") {
     deleteItem(num);
-    renderData(data);
   }
 });
 
+// 刪除功能
+function deleteItem(num) {
+  data[num].delete = true; // 不將 data 中的物件真的移除，改為將其 delete 屬性設定為 true
+  count--;
+  filtering();
+}
+
 // 清除已完成項目
 function clean(data) {
-  for (i = data.length - 1; i >= 0; i--) {
-    if (data[i].checked == true) {
-      deleteItem(i);
+  data.forEach(function (item) {
+    if (item.checked == true) {
+      item.delete = true
     }
-  }
-  renderData(data);
+  })
+  filtering();
 }
