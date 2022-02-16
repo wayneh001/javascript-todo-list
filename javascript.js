@@ -37,7 +37,7 @@ add.addEventListener("click", function (e) {
     alert("請輸入待辦事項");
     return;
   }
-  obj.content = text.value;
+  obj.content = text.value.trim();
   obj.checked = false;
   obj.dataNum = dataNum;
   obj.delete = false;
